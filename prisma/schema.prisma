@@ -1,0 +1,89 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Zone {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  stalls      Stall[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Stall {
+  id                String              @id @default(cuid())
+  stallNumber       String              @unique
+  zoneId            String
+  zone              Zone                @relation(fields: [zoneId], references: [id])
+  dailyRate         Float
+  monthlyRate       Float
+  status            String              // e.g. "AVAILABLE", "OCCUPIED"
+  contracts         Contract[]
+  paymentCollections PaymentCollection[]
+  attendanceLogs    AttendanceLog[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model Vendor {
+  id                String              @id @default(cuid())
+  name              String
+  phone             String?
+  vendorType        String              // "FIXED" or "CASUAL"
+  contracts         Contract[]
+  paymentCollections PaymentCollection[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model Contract {
+  id        String   @id @default(cuid())
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+  stallId   String
+  stall     Stall    @relation(fields: [stallId], references: [id])
+  startDate DateTime
+  endDate   DateTime?
+  status    String   // e.g. "ACTIVE", "TERMINATED"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentCollection {
+  id            String   @id @default(cuid())
+  stallId       String
+  stall         Stall    @relation(fields: [stallId], references: [id])
+  vendorId      String?
+  vendor        Vendor?  @relation(fields: [vendorId], references: [id])
+  stallFee      Float
+  waterFee      Float    @default(0)
+  electricFee   Float    @default(0)
+  garbageFee    Float    @default(0)
+  totalAmount   Float
+  paymentMethod String   // "CASH" or "QR"
+  status        String   // "PAID", "OVERDUE", "PENDING"
+  collectorId   String?  // Optional for now
+  paymentDate   DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AttendanceLog {
+  id        String   @id @default(cuid())
+  stallId   String
+  stall     Stall    @relation(fields: [stallId], references: [id])
+  date      DateTime
+  isPresent Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([stallId, date])
+}
