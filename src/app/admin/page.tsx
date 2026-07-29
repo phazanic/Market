@@ -123,7 +123,7 @@ export default async function AdminDashboard() {
       attendance: attendanceStat?._count.stallId || 0,
       revenue: revenueStat?._sum.totalAmount || 0,
     };
-  });
+  }).reverse();
 
   return (
     <div className="space-y-8">
