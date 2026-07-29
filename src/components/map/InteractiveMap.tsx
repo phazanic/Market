@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { collectPayment } from "@/app/actions/payment"
+import { QRCodeSVG } from "qrcode.react"
+import generatePayload from "promptpay-qr"
 
 type Vendor = {
   id: string
@@ -42,11 +44,12 @@ type Zone = {
 
 function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallColor: string, statusText: string }) {
   const [isOpen, setIsOpen] = useState(false)
-  const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false)
+  const [paymentStep, setPaymentStep] = useState<"none" | "form" | "qr" | "receipt">("none")
   const [waterFee, setWaterFee] = useState<number>(0)
   const [electricFee, setElectricFee] = useState<number>(0)
   const [garbageFee, setGarbageFee] = useState<number>(0)
   const [isPending, startTransition] = useTransition()
+  const [qrPayload, setQrPayload] = useState<string>("")
 
   const hasActiveContract = stall.contracts.length > 0
   const contract = hasActiveContract ? stall.contracts[0] : null
@@ -56,7 +59,7 @@ function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallCol
   const stallFee = vendor?.vendorType === "FIXED" ? stall.monthlyRate / 30 : stall.dailyRate
   const totalAmount = stallFee + waterFee + electricFee + garbageFee
 
-  const handleCollectPayment = () => {
+  const handleCollectPayment = (method: "CASH" | "QR") => {
     startTransition(async () => {
       const formData = new FormData()
       formData.append("stallId", stall.id)
@@ -65,24 +68,48 @@ function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallCol
       formData.append("waterFee", waterFee.toString())
       formData.append("electricFee", electricFee.toString())
       formData.append("garbageFee", garbageFee.toString())
-      formData.append("paymentMethod", "CASH")
+      formData.append("paymentMethod", method)
 
       const res = await collectPayment(formData)
       if (res.success) {
-        setIsOpen(false)
-        setIsPaymentFormOpen(false)
-        setWaterFee(0)
-        setElectricFee(0)
-        setGarbageFee(0)
+        setPaymentStep("receipt")
       }
     })
+  }
+
+  const handleGenerateQR = () => {
+    const payload = generatePayload("0899999999", { amount: totalAmount })
+    setQrPayload(payload)
+    setPaymentStep("qr")
+  }
+  
+  const handleShareReceipt = async () => {
+    const text = `Receipt for Stall ${stall.stallNumber}\nTotal: ฿${totalAmount.toFixed(2)}\nDate: ${new Date().toLocaleDateString()}`
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Payment Receipt",
+          text: text,
+        })
+      } catch (err) {
+        console.error("Share failed:", err)
+      }
+    } else {
+      alert("Sharing is not supported on this browser. Receipt copied to clipboard.")
+      navigator.clipboard.writeText(text)
+    }
   }
 
   // Handle dialog open state change
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
     if (!open) {
-      setTimeout(() => setIsPaymentFormOpen(false), 200) // Reset form state when closing
+      setTimeout(() => {
+        setPaymentStep("none")
+        setWaterFee(0)
+        setElectricFee(0)
+        setGarbageFee(0)
+      }, 200) // Reset form state when closing
     }
   }
 
@@ -102,7 +129,7 @@ function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallCol
           <DialogTitle className="text-2xl font-bold">Stall {stall.stallNumber}</DialogTitle>
         </DialogHeader>
         
-        {!isPaymentFormOpen ? (
+        {paymentStep === "none" && (
           <div className="grid gap-4 py-4">
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Status</span>
@@ -145,14 +172,16 @@ function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallCol
 
             {statusText === "Unpaid" && (
               <Button 
-                onClick={() => setIsPaymentFormOpen(true)}
+                onClick={() => setPaymentStep("form")}
                 className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold h-12"
               >
                 Collect Payment
               </Button>
             )}
           </div>
-        ) : (
+        )}
+
+        {paymentStep === "form" && (
           <div className="grid gap-4 py-4">
             <div className="bg-slate-50 p-4 rounded-lg border flex justify-between items-center">
               <span className="font-medium text-slate-600">Stall Fee</span>
@@ -200,20 +229,113 @@ function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallCol
             <div className="flex gap-2 mt-4">
               <Button 
                 variant="outline" 
-                onClick={() => setIsPaymentFormOpen(false)}
-                className="flex-1"
+                onClick={() => setPaymentStep("none")}
+                className="flex-1 border-slate-300"
                 disabled={isPending}
               >
                 Cancel
               </Button>
+              <div className="flex-[2] flex gap-2">
+                <Button 
+                  onClick={handleGenerateQR}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs px-2"
+                  disabled={isPending}
+                >
+                  PromptPay QR
+                </Button>
+                <Button 
+                  onClick={() => handleCollectPayment("CASH")}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2"
+                  disabled={isPending}
+                >
+                  {isPending ? "..." : "Confirm Cash"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {paymentStep === "qr" && (
+          <div className="flex flex-col items-center gap-6 py-4">
+            <div className="bg-slate-50 p-4 rounded-lg border w-full flex justify-between items-center mb-2">
+              <span className="font-medium text-slate-600">Total Amount</span>
+              <span className="font-bold text-xl text-blue-700">฿{totalAmount.toFixed(2)}</span>
+            </div>
+            
+            <div className="p-4 bg-white rounded-xl shadow-sm border flex flex-col items-center">
+              <QRCodeSVG value={qrPayload} size={200} />
+              <div className="mt-4 text-center">
+                <p className="font-bold text-lg text-slate-800">089-999-9999</p>
+                <p className="text-sm font-medium text-slate-500">Market Admin Co., Ltd.</p>
+              </div>
+            </div>
+            
+            <div className="text-center text-sm text-slate-500">
+              Please ask the tenant to scan this QR code to pay via PromptPay.
+            </div>
+
+            <div className="flex w-full gap-2 mt-2">
               <Button 
-                onClick={handleCollectPayment}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                variant="outline" 
+                onClick={() => setPaymentStep("form")}
+                className="flex-1"
                 disabled={isPending}
               >
-                {isPending ? "Processing..." : "Confirm Cash"}
+                Back
+              </Button>
+              <Button 
+                onClick={() => handleCollectPayment("QR")}
+                className="flex-[2] bg-emerald-600 hover:bg-emerald-700 text-white"
+                disabled={isPending}
+              >
+                {isPending ? "Processing..." : "Confirm QR Payment"}
               </Button>
             </div>
+          </div>
+        )}
+
+        {paymentStep === "receipt" && (
+          <div className="flex flex-col items-center gap-6 py-6">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-slate-800">Payment Successful</h3>
+              <p className="text-slate-500 mt-1">Stall {stall.stallNumber}</p>
+            </div>
+
+            <div className="w-full bg-slate-50 rounded-lg border p-4 flex flex-col gap-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Date</span>
+                <span className="font-medium">{new Date().toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Tenant</span>
+                <span className="font-medium">{vendor?.name || "N/A"}</span>
+              </div>
+              <div className="border-t my-1"></div>
+              <div className="flex justify-between text-lg font-bold text-slate-800">
+                <span>Total Paid</span>
+                <span>฿{totalAmount.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleShareReceipt}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg"
+            >
+              Share to LINE
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsOpen(false)}
+              className="w-full text-slate-500"
+            >
+              Close
+            </Button>
           </div>
         )}
       </DialogContent>
