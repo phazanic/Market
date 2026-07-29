@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
 
+const toISODates = <T extends { createdAt: Date, updatedAt: Date }>(obj: T) => ({
+  ...obj,
+  createdAt: obj.createdAt.toISOString(),
+  updatedAt: obj.updatedAt.toISOString(),
+})
+
 export default async function FieldCollectorHome() {
   // Fetch zones and stalls
   const startOfDay = new Date()
@@ -26,6 +32,13 @@ export default async function FieldCollectorHome() {
                 gte: startOfDay
               }
             }
+          },
+          attendanceLogs: {
+            where: {
+              date: {
+                gte: startOfDay
+              }
+            }
           }
         },
         orderBy: {
@@ -40,30 +53,22 @@ export default async function FieldCollectorHome() {
 
   // We map dates correctly for client serialization
   const serializedZones = zones.map(zone => ({
-    ...zone,
-    createdAt: zone.createdAt.toISOString(),
-    updatedAt: zone.updatedAt.toISOString(),
+    ...toISODates(zone),
     stalls: zone.stalls.map(stall => ({
-      ...stall,
-      createdAt: stall.createdAt.toISOString(),
-      updatedAt: stall.updatedAt.toISOString(),
+      ...toISODates(stall),
       contracts: stall.contracts.map(contract => ({
-        ...contract,
+        ...toISODates(contract),
         startDate: contract.startDate.toISOString(),
         endDate: contract.endDate?.toISOString() || null,
-        createdAt: contract.createdAt.toISOString(),
-        updatedAt: contract.updatedAt.toISOString(),
-        vendor: {
-          ...contract.vendor,
-          createdAt: contract.vendor.createdAt.toISOString(),
-          updatedAt: contract.vendor.updatedAt.toISOString(),
-        }
+        vendor: toISODates(contract.vendor)
       })),
       paymentCollections: stall.paymentCollections.map(payment => ({
-        ...payment,
+        ...toISODates(payment),
         paymentDate: payment.paymentDate.toISOString(),
-        createdAt: payment.createdAt.toISOString(),
-        updatedAt: payment.updatedAt.toISOString(),
+      })),
+      attendanceLogs: stall.attendanceLogs.map((log: any) => ({
+        ...toISODates(log),
+        date: log.date.toISOString(),
       }))
     }))
   }))

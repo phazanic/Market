@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { collectPayment } from "@/app/actions/payment"
+import { toggleAttendance } from "@/app/actions/attendance"
 import { QRCodeSVG } from "qrcode.react"
 import generatePayload from "promptpay-qr"
+import { CheckCircle2 } from "lucide-react"
 
 type Vendor = {
   id: string
@@ -26,6 +28,12 @@ type PaymentCollection = {
   status: string
 }
 
+type AttendanceLog = {
+  id: string
+  date: string
+  isPresent: boolean
+}
+
 type Stall = {
   id: string
   stallNumber: string
@@ -34,12 +42,54 @@ type Stall = {
   monthlyRate: number
   contracts: Contract[]
   paymentCollections: PaymentCollection[]
+  attendanceLogs: AttendanceLog[]
 }
 
 type Zone = {
   id: string
   name: string
   stalls: Stall[]
+}
+
+function getLocalISODate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function AttendanceToggle({ stallId, attendanceLogs }: { stallId: string, attendanceLogs: AttendanceLog[] }) {
+  const [isPending, startTransition] = useTransition()
+
+  const todayStr = getLocalISODate(new Date())
+  const todayAttendance = attendanceLogs?.find(log => log.date.startsWith(todayStr))
+  const isPresentToday = todayAttendance?.isPresent ?? false
+
+  const handleToggleAttendance = () => {
+    startTransition(async () => {
+      const res = await toggleAttendance(stallId, todayStr, !isPresentToday)
+      if (!res.success) {
+        alert("Failed to update attendance. Please try again.")
+      }
+    })
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Attendance</span>
+      <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-lg border">
+        <span className="font-medium flex-1">{isPresentToday ? "Present Today" : "Absent Today"}</span>
+        <Button 
+          onClick={handleToggleAttendance}
+          variant={isPresentToday ? "default" : "outline"}
+          className={cn("h-8 text-xs", isPresentToday ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent" : "border-slate-300 text-slate-700")}
+          disabled={isPending}
+        >
+          Mark {isPresentToday ? "Absent" : "Present"}
+        </Button>
+      </div>
+    </div>
+  )
 }
 
 function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallColor: string, statusText: string }) {
@@ -54,6 +104,10 @@ function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallCol
   const hasActiveContract = stall.contracts.length > 0
   const contract = hasActiveContract ? stall.contracts[0] : null
   const vendor = contract?.vendor
+
+  const todayStr = getLocalISODate(new Date())
+  const todayAttendance = stall.attendanceLogs?.find(log => log.date.startsWith(todayStr))
+  const isPresentToday = todayAttendance?.isPresent ?? false
 
   // Determine stall fee based on vendor type or fallback to dailyRate
   const stallFee = vendor?.vendorType === "FIXED" ? stall.monthlyRate / 30 : stall.dailyRate
@@ -117,12 +171,15 @@ function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallCol
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger
         className={cn(
-          "aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-2 shadow-sm transition-transform active:scale-95 duration-100",
+          "relative aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-2 shadow-sm transition-transform active:scale-95 duration-100",
           stallColor
         )}
       >
         <span className="font-bold text-xl">{stall.stallNumber}</span>
         <span className="text-xs font-medium mt-1">{statusText}</span>
+        {isPresentToday && (
+          <CheckCircle2 className="absolute -top-2 -right-2 w-6 h-6 text-emerald-500 bg-white rounded-full border-2 border-white shadow-sm" />
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] w-[90%] rounded-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -142,6 +199,8 @@ function StallDialog({ stall, stallColor, statusText }: { stall: Stall, stallCol
                 <span className="font-medium text-lg">{statusText}</span>
               </div>
             </div>
+
+            <AttendanceToggle stallId={stall.id} attendanceLogs={stall.attendanceLogs} />
             
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Rates</span>
