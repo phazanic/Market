@@ -52,6 +52,18 @@ async function main() {
     data: { vendorId: vendor2.id, stallId: stall4.id, startDate: new Date('2024-01-01'), status: 'ACTIVE' }
   })
 
+  // 5. Create Payment Collection (Example of a paid stall for today)
+  await prisma.paymentCollection.create({
+    data: {
+      stallId: stall1.id,
+      vendorId: vendor1.id,
+      stallFee: 100,
+      totalAmount: 100,
+      paymentMethod: 'CASH',
+      status: 'PAID',
+    }
+  })
+
   console.log('Database seeded successfully')
 }
 
