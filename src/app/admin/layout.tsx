@@ -9,7 +9,7 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-neutral-100 dark:bg-neutral-900">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-white dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700">
+      <aside className="hidden md:block w-full md:w-64 bg-white dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700">
         <div className="p-6">
           <Link href="/admin" className="flex items-center gap-2 font-bold text-xl text-neutral-900 dark:text-white">
             <Store className="h-6 w-6 text-primary" />
