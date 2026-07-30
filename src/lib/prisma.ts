@@ -10,17 +10,19 @@ if (USE_MOCK_UI) {
   
   const dummyDate = new Date()
   
-  // Create a fake Prisma client that returns mock data
+  const mockZones = [
+    { id: "z1", name: "โซนอาหาร (A)", description: "อาหารคาว", createdAt: dummyDate, updatedAt: dummyDate, stalls: [] },
+    { id: "z2", name: "โซนเสื้อผ้า (B)", description: "เสื้อผ้าแฟชั่น", createdAt: dummyDate, updatedAt: dummyDate, stalls: [] }
+  ]
+
   const mockStalls = [
-    { id: "s1", stallNumber: "A-01", zoneId: "z1", dailyRate: 100, monthlyRate: 3000, status: "OCCUPIED", createdAt: dummyDate, updatedAt: dummyDate, contracts: [{ id: "c1", vendor: { name: "ร้านป้าแจ่ม" }, startDate: dummyDate }], paymentCollections: [], attendanceLogs: [] },
-    { id: "s2", stallNumber: "A-02", zoneId: "z1", dailyRate: 100, monthlyRate: 3000, status: "AVAILABLE", createdAt: dummyDate, updatedAt: dummyDate, contracts: [], paymentCollections: [], attendanceLogs: [] },
-    { id: "s3", stallNumber: "B-01", zoneId: "z2", dailyRate: 150, monthlyRate: 4000, status: "OCCUPIED", createdAt: dummyDate, updatedAt: dummyDate, contracts: [{ id: "c2", vendor: { name: "ร้านลุงหมาย" }, startDate: dummyDate }], paymentCollections: [], attendanceLogs: [] },
+    { id: "s1", stallNumber: "A-01", zoneId: "z1", dailyRate: 100, monthlyRate: 3000, status: "OCCUPIED", createdAt: dummyDate, updatedAt: dummyDate, contracts: [{ id: "c1", vendor: { name: "ร้านป้าแจ่ม" }, startDate: dummyDate }], paymentCollections: [], attendanceLogs: [], zone: mockZones[0] },
+    { id: "s2", stallNumber: "A-02", zoneId: "z1", dailyRate: 100, monthlyRate: 3000, status: "AVAILABLE", createdAt: dummyDate, updatedAt: dummyDate, contracts: [], paymentCollections: [], attendanceLogs: [], zone: mockZones[0] },
+    { id: "s3", stallNumber: "B-01", zoneId: "z2", dailyRate: 150, monthlyRate: 4000, status: "OCCUPIED", createdAt: dummyDate, updatedAt: dummyDate, contracts: [{ id: "c2", vendor: { name: "ร้านลุงหมาย" }, startDate: dummyDate }], paymentCollections: [], attendanceLogs: [], zone: mockZones[1] },
   ]
   
-  const mockZones = [
-    { id: "z1", name: "โซนอาหาร (A)", description: "อาหารคาว", createdAt: dummyDate, updatedAt: dummyDate, stalls: mockStalls.filter(s => s.zoneId === 'z1') },
-    { id: "z2", name: "โซนเสื้อผ้า (B)", description: "เสื้อผ้าแฟชั่น", createdAt: dummyDate, updatedAt: dummyDate, stalls: mockStalls.filter(s => s.zoneId === 'z2') }
-  ]
+  mockZones[0].stalls = mockStalls.filter(s => s.zoneId === 'z1') as any
+  mockZones[1].stalls = mockStalls.filter(s => s.zoneId === 'z2') as any
 
   prisma = {
     zone: {
