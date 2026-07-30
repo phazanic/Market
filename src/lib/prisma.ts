@@ -15,10 +15,15 @@ if (USE_MOCK_UI) {
     { id: "z2", name: "โซนเสื้อผ้า (B)", description: "เสื้อผ้าแฟชั่น", createdAt: dummyDate, updatedAt: dummyDate, stalls: [] }
   ]
 
+  const dummyVendor1 = { id: "v1", name: "ร้านป้าแจ่ม", phone: "0812345678", vendorType: "FIXED", createdAt: dummyDate, updatedAt: dummyDate }
+  const dummyVendor2 = { id: "v2", name: "ร้านลุงหมาย", phone: "0898765432", vendorType: "CASUAL", createdAt: dummyDate, updatedAt: dummyDate }
+  const dummyContract1 = { id: "c1", vendorId: "v1", vendor: dummyVendor1, stallId: "s1", startDate: dummyDate, endDate: null, status: "ACTIVE", createdAt: dummyDate, updatedAt: dummyDate }
+  const dummyContract2 = { id: "c2", vendorId: "v2", vendor: dummyVendor2, stallId: "s3", startDate: dummyDate, endDate: null, status: "ACTIVE", createdAt: dummyDate, updatedAt: dummyDate }
+
   const mockStalls = [
-    { id: "s1", stallNumber: "A-01", zoneId: "z1", dailyRate: 100, monthlyRate: 3000, status: "OCCUPIED", createdAt: dummyDate, updatedAt: dummyDate, contracts: [{ id: "c1", vendor: { name: "ร้านป้าแจ่ม" }, startDate: dummyDate }], paymentCollections: [], attendanceLogs: [], zone: mockZones[0] },
+    { id: "s1", stallNumber: "A-01", zoneId: "z1", dailyRate: 100, monthlyRate: 3000, status: "OCCUPIED", createdAt: dummyDate, updatedAt: dummyDate, contracts: [dummyContract1], paymentCollections: [], attendanceLogs: [], zone: mockZones[0] },
     { id: "s2", stallNumber: "A-02", zoneId: "z1", dailyRate: 100, monthlyRate: 3000, status: "AVAILABLE", createdAt: dummyDate, updatedAt: dummyDate, contracts: [], paymentCollections: [], attendanceLogs: [], zone: mockZones[0] },
-    { id: "s3", stallNumber: "B-01", zoneId: "z2", dailyRate: 150, monthlyRate: 4000, status: "OCCUPIED", createdAt: dummyDate, updatedAt: dummyDate, contracts: [{ id: "c2", vendor: { name: "ร้านลุงหมาย" }, startDate: dummyDate }], paymentCollections: [], attendanceLogs: [], zone: mockZones[1] },
+    { id: "s3", stallNumber: "B-01", zoneId: "z2", dailyRate: 150, monthlyRate: 4000, status: "OCCUPIED", createdAt: dummyDate, updatedAt: dummyDate, contracts: [dummyContract2], paymentCollections: [], attendanceLogs: [], zone: mockZones[1] },
   ]
   
   mockZones[0].stalls = mockStalls.filter(s => s.zoneId === 'z1') as any
