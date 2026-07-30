@@ -32,21 +32,36 @@ if (USE_MOCK_UI) {
   prisma = {
     zone: {
       findMany: async () => mockZones,
+      create: async () => ({}),
+      update: async () => ({}),
     },
     stall: {
       findMany: async () => mockStalls,
+      create: async () => ({}),
+      update: async () => ({}),
     },
     vendor: {
       findMany: async () => [],
+      create: async () => ({}),
+      update: async () => ({}),
     },
     contract: {
       findMany: async () => [],
+      create: async () => ({}),
+      update: async () => ({}),
     },
     paymentCollection: {
       findMany: async () => [],
+      groupBy: async () => [],
+      create: async () => ({}),
+      update: async () => ({}),
     },
     attendanceLog: {
       findMany: async () => [],
+      groupBy: async () => [],
+      create: async () => ({}),
+      update: async () => ({}),
+      upsert: async () => ({}),
     },
     $transaction: async (fn: any) => fn(prisma),
     $connect: async () => {},
