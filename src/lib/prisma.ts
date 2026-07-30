@@ -3,7 +3,7 @@ import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 
 const USE_MOCK_UI = process.env.USE_MOCK_UI === 'true'
 
-let prisma: PrismaClient | any
+let prisma: PrismaClient
 
 if (USE_MOCK_UI) {
   console.log("Mock UI Mode Enabled: Bypassing Prisma Database")
@@ -44,7 +44,7 @@ if (USE_MOCK_UI) {
     $transaction: async (fn: any) => fn(prisma),
     $connect: async () => {},
     $disconnect: async () => {},
-  }
+  } as unknown as PrismaClient
 } else {
   // Standard SQLite initialization
   let adapter: any;
