@@ -10,7 +10,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardStats }
   const [stats, setStats] = useState<DashboardStats>(initialData);
 
   useEffect(() => {
-    // Poll every 15 seconds silently
+    // Poll every 60 seconds silently
     const interval = setInterval(async () => {
       try {
         const newData = await getDashboardStats();
@@ -18,7 +18,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardStats }
       } catch (error) {
         console.error("Failed to fetch dashboard updates", error);
       }
-    }, 15000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);

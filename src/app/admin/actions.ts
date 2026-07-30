@@ -11,81 +11,72 @@ export async function getDashboardStats() {
   const startOfLast7Days = new Date(startOfDay);
   startOfLast7Days.setDate(startOfLast7Days.getDate() - 6);
 
-  const todayPayments = await prisma.paymentCollection.findMany({
-    where: {
-      status: "PAID",
-      paymentDate: { gte: startOfDay },
-    },
+  // Revenue aggregations
+  const revenueAggregate = await prisma.paymentCollection.aggregate({
+    where: { status: "PAID", paymentDate: { gte: startOfDay } },
+    _sum: { totalAmount: true }
+  });
+  const totalRevenue = revenueAggregate._sum.totalAmount || 0;
+
+  const revenueByMethod = await prisma.paymentCollection.groupBy({
+    by: ['paymentMethod'],
+    where: { status: "PAID", paymentDate: { gte: startOfDay } },
+    _sum: { totalAmount: true }
+  });
+  const cashRevenue = revenueByMethod.find(r => r.paymentMethod === 'CASH')?._sum.totalAmount || 0;
+  const qrRevenue = revenueByMethod.find(r => r.paymentMethod === 'QR')?._sum.totalAmount || 0;
+
+  // Stalls stats
+  const activeStallsCount = await prisma.stall.count({
+    where: { contracts: { some: { status: "ACTIVE" } } }
   });
 
-  const { totalRevenue, cashRevenue, qrRevenue } = todayPayments.reduce(
-    (acc, curr) => {
-      acc.totalRevenue += curr.totalAmount;
-      if (curr.paymentMethod === "CASH") acc.cashRevenue += curr.totalAmount;
-      if (curr.paymentMethod === "QR") acc.qrRevenue += curr.totalAmount;
-      return acc;
-    },
-    { totalRevenue: 0, cashRevenue: 0, qrRevenue: 0 }
-  );
+  const presentCount = await prisma.attendanceLog.count({
+    where: { date: { gte: startOfDay }, isPresent: true }
+  });
 
-  const allStalls = await prisma.stall.findMany({
-    include: {
+  // Calculate overdue by fetching minimal needed data
+  const activeStalls = await prisma.stall.findMany({
+    where: { contracts: { some: { status: "ACTIVE" } } },
+    select: {
+      id: true,
       contracts: {
         where: { status: "ACTIVE" },
-        include: { vendor: true },
+        select: { vendor: { select: { vendorType: true } } },
       },
       paymentCollections: {
         where: { status: "PAID", paymentDate: { gte: startOfMonth } },
-      },
-      attendanceLogs: {
-        where: { date: { gte: startOfDay } },
+        select: { paymentDate: true },
       },
     },
   });
 
   let overdueCount = 0;
-  let presentCount = 0;
-  let activeStallsCount = 0;
-
-  allStalls.forEach((stall) => {
-    const activeContracts = stall.contracts;
-    const hasActiveContract = activeContracts.length > 0;
+  activeStalls.forEach((stall) => {
+    const isCasual = stall.contracts.some(c => c.vendor.vendorType === "CASUAL");
+    const isFixed = stall.contracts.some(c => c.vendor.vendorType === "FIXED");
     
-    if (hasActiveContract) {
-      activeStallsCount++;
-      
-      const isCasual = activeContracts.some(c => c.vendor.vendorType === "CASUAL");
-      const isFixed = activeContracts.some(c => c.vendor.vendorType === "FIXED");
-      
-      const hasPaidDaily = stall.paymentCollections.some(p => new Date(p.paymentDate) >= startOfDay);
-      const hasPaidMonthly = stall.paymentCollections.some(p => new Date(p.paymentDate) >= startOfMonth);
+    const hasPaidDaily = stall.paymentCollections.some(p => new Date(p.paymentDate) >= startOfDay);
+    const hasPaidMonthly = stall.paymentCollections.some(p => new Date(p.paymentDate) >= startOfMonth);
 
-      if (isCasual && !hasPaidDaily) {
-        overdueCount++;
-      } else if (isFixed && !hasPaidMonthly) {
-        overdueCount++;
-      }
-
-      if (stall.attendanceLogs.some((log) => log.isPresent)) {
-        presentCount++;
-      }
+    if (isCasual && !hasPaidDaily) {
+      overdueCount++;
+    } else if (isFixed && !hasPaidMonthly) {
+      overdueCount++;
     }
   });
 
   const occupancyRate = activeStallsCount > 0 ? Math.round((presentCount / activeStallsCount) * 100) : 0;
 
+  // Historical stats
   const recentAttendance = await prisma.attendanceLog.groupBy({
     by: ['date'],
     where: {
       date: { gte: startOfLast7Days },
       isPresent: true
     },
-    _count: {
-      stallId: true
-    },
-    orderBy: {
-      date: 'asc'
-    }
+    _count: { stallId: true },
+    orderBy: { date: 'asc' }
   });
 
   const recentRevenue = await prisma.paymentCollection.groupBy({
@@ -94,12 +85,8 @@ export async function getDashboardStats() {
       status: "PAID",
       paymentDate: { gte: startOfLast7Days }
     },
-    _sum: {
-      totalAmount: true
-    },
-    orderBy: {
-      paymentDate: 'asc'
-    }
+    _sum: { totalAmount: true },
+    orderBy: { paymentDate: 'asc' }
   });
 
   const days = Array.from({ length: 7 }).map((_, i) => {

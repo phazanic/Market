@@ -74,6 +74,9 @@ model PaymentCollection {
   paymentDate   DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([paymentDate])
+  @@index([status])
 }
 
 model AttendanceLog {
@@ -86,4 +89,5 @@ model AttendanceLog {
   updatedAt DateTime @updatedAt
 
   @@unique([stallId, date])
+  @@index([date])
 }

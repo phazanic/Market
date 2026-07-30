@@ -22,25 +22,38 @@ type Stall = {
 
 interface StallFormProps {
   zones: Zone[]
-  stall?: Stall
-  trigger: ReactElement
+  stall?: Stall | null
+  trigger?: ReactElement
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function StallForm({ zones, stall, trigger }: StallFormProps) {
-  const [open, setOpen] = useState(false)
+export function StallForm({ zones, stall, trigger, open, onOpenChange }: StallFormProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = open !== undefined && onOpenChange !== undefined
+  const isOpen = isControlled ? open : internalOpen
+  
+  const handleOpenChange = (newOpen: boolean) => {
+    if (isControlled) {
+      onOpenChange(newOpen)
+    } else {
+      setInternalOpen(newOpen)
+    }
+  }
+
   const isEditing = !!stall
   const action = isEditing ? updateStall : createStall
   const [state, formAction, isPending] = useActionState(action, null)
 
   useEffect(() => {
     if (state?.success) {
-      setOpen(false)
+      handleOpenChange(false)
     }
   }, [state])
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger} />
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      {trigger && <DialogTrigger render={trigger} />}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Stall" : "Add New Stall"}</DialogTitle>
@@ -119,7 +132,7 @@ export function StallForm({ zones, stall, trigger }: StallFormProps) {
           )}
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
