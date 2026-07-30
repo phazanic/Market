@@ -39,19 +39,19 @@ export function BottomNav() {
         <NavItem 
           href="/" 
           icon={MapIcon} 
-          label="Map" 
+          label="แผนที่" 
           isActive={pathname === "/"} 
         />
         <NavItem 
           href="/admin" 
           icon={LayoutDashboard} 
-          label="Dashboard" 
+          label="ระบบหลังบ้าน" 
           isActive={pathname.startsWith("/admin")} 
         />
         <NavItem 
           href="/settings" 
           icon={Settings} 
-          label="Settings" 
+          label="ตั้งค่า" 
           isActive={pathname.startsWith("/settings")} 
         />
       </div>

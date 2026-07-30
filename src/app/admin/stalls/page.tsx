@@ -17,8 +17,8 @@ export default async function StallsPage() {
 
   return (
     <AdminDashboardWrapper 
-      title="Stalls" 
-      actionButton={<StallForm zones={zones} trigger={<Button>Add Stall</Button>} />}
+      title="แผงร้านค้า" 
+      actionButton={<StallForm zones={zones} trigger={<Button>เพิ่มแผงร้านค้า</Button>} />}
     >
       <StallTableClient stalls={stalls} zones={zones} />
     </AdminDashboardWrapper>

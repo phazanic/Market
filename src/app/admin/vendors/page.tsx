@@ -19,15 +19,15 @@ export default async function VendorsPage() {
 
   return (
     <AdminDashboardWrapper 
-      title="Vendors (Tenants)" 
-      actionButton={<VendorForm trigger={<Button>Add Vendor</Button>} />}
+      title="ผู้เช่าแผง" 
+      actionButton={<VendorForm trigger={<Button>เพิ่มผู้เช่า</Button>} />}
     >
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name / Company</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Phone</TableHead>
+            <TableHead>ชื่อ / บริษัท</TableHead>
+            <TableHead>ประเภท</TableHead>
+            <TableHead>เบอร์โทรศัพท์</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -38,7 +38,7 @@ export default async function VendorsPage() {
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   VENDOR_TYPE_COLORS[vendor.vendorType as VendorType] || 'bg-gray-100 text-gray-700'
                 }`}>
-                  {vendor.vendorType}
+                  {vendor.vendorType === 'CASUAL' ? 'รายวัน' : vendor.vendorType === 'FIXED' ? 'รายเดือน' : vendor.vendorType}
                 </span>
               </TableCell>
               <TableCell>{vendor.phone || "-"}</TableCell>
@@ -47,7 +47,7 @@ export default async function VendorsPage() {
           {vendors.length === 0 && (
             <TableRow>
               <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
-                No vendors found. Add one to get started.
+                ไม่พบข้อมูลผู้เช่า กรุณาเพิ่มข้อมูลใหม่
               </TableCell>
             </TableRow>
           )}

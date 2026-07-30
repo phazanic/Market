@@ -74,7 +74,7 @@ export default async function FieldCollectorHome() {
   }))
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-neutral-950">
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <InteractiveMap zones={serializedZones as any} />
     </div>

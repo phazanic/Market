@@ -39,11 +39,11 @@ export function StallTableClient({ stalls, zones }: StallTableClientProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Stall Number</TableHead>
-            <TableHead>Zone</TableHead>
-            <TableHead>Daily Rate</TableHead>
-            <TableHead>Monthly Rate</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>รหัสแผง</TableHead>
+            <TableHead>โซน</TableHead>
+            <TableHead>ค่าเช่ารายวัน</TableHead>
+            <TableHead>ค่าเช่ารายเดือน</TableHead>
+            <TableHead>สถานะ</TableHead>
             <TableHead className="w-[80px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -58,7 +58,9 @@ export function StallTableClient({ stalls, zones }: StallTableClientProps) {
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   STALL_STATUS_COLORS[stall.status as StallStatus] || 'bg-gray-100 text-gray-700'
                 }`}>
-                  {stall.status}
+                  {stall.status === 'AVAILABLE' ? 'ว่าง' : 
+                   stall.status === 'OCCUPIED' ? 'มีผู้เช่า' : 
+                   stall.status === 'MAINTENANCE' ? 'ซ่อมบำรุง' : stall.status}
                 </span>
               </TableCell>
               <TableCell>
@@ -68,7 +70,7 @@ export function StallTableClient({ stalls, zones }: StallTableClientProps) {
                   onClick={() => setSelectedStall(stall)}
                 >
                   <PencilIcon className="h-4 w-4" />
-                  <span className="sr-only">Edit</span>
+                  <span className="sr-only">แก้ไข</span>
                 </Button>
               </TableCell>
             </TableRow>
@@ -76,7 +78,7 @@ export function StallTableClient({ stalls, zones }: StallTableClientProps) {
           {stalls.length === 0 && (
             <TableRow>
               <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                No stalls found. Add one to get started.
+                ไม่พบข้อมูลแผงร้านค้า กรุณาเพิ่มข้อมูลใหม่
               </TableCell>
             </TableRow>
           )}

@@ -16,12 +16,12 @@ export default async function ZonesPage() {
   })
 
   return (
-    <AdminDashboardWrapper title="Zones" actionButton={<ZoneForm />}>
+    <AdminDashboardWrapper title="โซน" actionButton={<ZoneForm />}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead>ชื่อโซน</TableHead>
+            <TableHead>รายละเอียด</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -34,7 +34,7 @@ export default async function ZonesPage() {
           {zones.length === 0 && (
             <TableRow>
               <TableCell colSpan={2} className="text-center text-muted-foreground py-8">
-                No zones found. Add one to get started.
+                ไม่พบข้อมูลโซน กรุณาเพิ่มข้อมูลใหม่
               </TableCell>
             </TableRow>
           )}

@@ -19,19 +19,19 @@ export function ZoneForm() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>Add Zone</Button>} />
+      <DialogTrigger render={<Button>เพิ่มโซน</Button>} />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Zone</DialogTitle>
+          <DialogTitle>เพิ่มโซนใหม่</DialogTitle>
         </DialogHeader>
         <form action={formAction} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Zone Name</Label>
-            <Input id="name" name="name" required placeholder="e.g. Food Zone" />
+            <Label htmlFor="name">ชื่อโซน</Label>
+            <Input id="name" name="name" required placeholder="เช่น โซนอาหาร" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input id="description" name="description" placeholder="Optional description" />
+            <Label htmlFor="description">รายละเอียด</Label>
+            <Input id="description" name="description" placeholder="รายละเอียดเพิ่มเติม (ไม่บังคับ)" />
           </div>
           
           {state?.error && (
@@ -40,10 +40,10 @@ export function ZoneForm() {
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              ยกเลิก
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save"}
+              {isPending ? "กำลังบันทึก..." : "บันทึก"}
             </Button>
           </div>
         </form>

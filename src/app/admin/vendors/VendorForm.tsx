@@ -28,28 +28,28 @@ export function VendorForm({ trigger }: VendorFormProps) {
       <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Vendor</DialogTitle>
+          <DialogTitle>เพิ่มผู้เช่าใหม่</DialogTitle>
         </DialogHeader>
         <form action={formAction} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name / Company</Label>
-            <Input id="name" name="name" required placeholder="e.g. Somchai Vegetables" />
+            <Label htmlFor="name">ชื่อ / บริษัท</Label>
+            <Input id="name" name="name" required placeholder="เช่น ผักสดเจ๊สมชาย" />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input id="phone" name="phone" placeholder="e.g. 0812345678" />
+            <Label htmlFor="phone">เบอร์โทรศัพท์</Label>
+            <Input id="phone" name="phone" placeholder="เช่น 0812345678" />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="vendorType">Vendor Type</Label>
+            <Label htmlFor="vendorType">ประเภทผู้เช่า</Label>
             <Select name="vendorType" defaultValue={VENDOR_TYPE.FIXED} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder="เลือกประเภท" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={VENDOR_TYPE.FIXED}>Fixed</SelectItem>
-                <SelectItem value={VENDOR_TYPE.CASUAL}>Casual</SelectItem>
+                <SelectItem value={VENDOR_TYPE.FIXED}>รายเดือน</SelectItem>
+                <SelectItem value={VENDOR_TYPE.CASUAL}>รายวัน</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -60,10 +60,10 @@ export function VendorForm({ trigger }: VendorFormProps) {
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              ยกเลิก
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save"}
+              {isPending ? "กำลังบันทึก..." : "บันทึก"}
             </Button>
           </div>
         </form>

@@ -56,27 +56,27 @@ export function StallForm({ zones, stall, trigger, open, onOpenChange }: StallFo
       {trigger && <DialogTrigger render={trigger} />}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Stall" : "Add New Stall"}</DialogTitle>
+          <DialogTitle>{isEditing ? "แก้ไขแผงร้านค้า" : "เพิ่มแผงร้านค้าใหม่"}</DialogTitle>
         </DialogHeader>
         <form action={formAction} className="space-y-4 mt-4">
           {isEditing && <input type="hidden" name="id" value={stall.id} />}
           
           <div className="space-y-2">
-            <Label htmlFor="stallNumber">Stall Number</Label>
+            <Label htmlFor="stallNumber">รหัสแผง</Label>
             <Input 
               id="stallNumber" 
               name="stallNumber" 
               defaultValue={stall?.stallNumber} 
               required 
-              placeholder="e.g. A01" 
+              placeholder="เช่น A01" 
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="zoneId">Zone</Label>
+            <Label htmlFor="zoneId">โซน</Label>
             <Select name="zoneId" defaultValue={stall?.zoneId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select a zone" />
+                <SelectValue placeholder="เลือกโซน" />
               </SelectTrigger>
               <SelectContent>
                 {zones.map((z) => (
@@ -90,7 +90,7 @@ export function StallForm({ zones, stall, trigger, open, onOpenChange }: StallFo
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dailyRate">Daily Rate (THB)</Label>
+              <Label htmlFor="dailyRate">ค่าเช่ารายวัน (บาท)</Label>
               <Input 
                 id="dailyRate" 
                 name="dailyRate" 
@@ -101,7 +101,7 @@ export function StallForm({ zones, stall, trigger, open, onOpenChange }: StallFo
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="monthlyRate">Monthly Rate (THB)</Label>
+              <Label htmlFor="monthlyRate">ค่าเช่ารายเดือน (บาท)</Label>
               <Input 
                 id="monthlyRate" 
                 name="monthlyRate" 
@@ -114,15 +114,15 @@ export function StallForm({ zones, stall, trigger, open, onOpenChange }: StallFo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+            <Label htmlFor="status">สถานะ</Label>
             <Select name="status" defaultValue={stall?.status || STALL_STATUS.AVAILABLE}>
               <SelectTrigger>
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder="เลือกสถานะ" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={STALL_STATUS.AVAILABLE}>Available</SelectItem>
-                <SelectItem value={STALL_STATUS.OCCUPIED}>Occupied</SelectItem>
-                <SelectItem value={STALL_STATUS.MAINTENANCE}>Maintenance</SelectItem>
+                <SelectItem value={STALL_STATUS.AVAILABLE}>ว่าง</SelectItem>
+                <SelectItem value={STALL_STATUS.OCCUPIED}>มีผู้เช่า</SelectItem>
+                <SelectItem value={STALL_STATUS.MAINTENANCE}>ซ่อมบำรุง</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -133,10 +133,10 @@ export function StallForm({ zones, stall, trigger, open, onOpenChange }: StallFo
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-              Cancel
+              ยกเลิก
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save"}
+              {isPending ? "กำลังบันทึก..." : "บันทึก"}
             </Button>
           </div>
         </form>
