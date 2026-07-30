@@ -60,7 +60,7 @@ if (USE_MOCK_UI) {
     prisma: PrismaClient | undefined
   }
 
-  prisma = globalForPrisma.prisma ?? new PrismaClient(adapter ? { adapter } : undefined)
+  prisma = globalForPrisma.prisma ?? new PrismaClient(adapter ? { adapter } : {})
 
   if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 }
